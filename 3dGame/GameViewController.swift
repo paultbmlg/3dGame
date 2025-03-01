@@ -91,44 +91,61 @@ class GameViewController: UIViewController {
     }
     
     private func setupControlButtons() {
-        let buttonSize: CGFloat = 50
-        let spacing: CGFloat = 10
+        // Create a visually appealing control pad with better layout
+        let buttonSize: CGFloat = 60
+        let spacing: CGFloat = 8
         let bottomPadding: CGFloat = 50
+        
+        // Center point for the directional pad
+        let centerX = view.bounds.width * 0.25
+        let centerY = view.bounds.height - (2 * buttonSize + spacing + bottomPadding)
         
         // Up button
         let upButton = createButton(title: "↑", action: #selector(moveUp))
-        upButton.frame = CGRect(x: buttonSize + spacing,
-                              y: view.bounds.height - (2 * buttonSize + spacing + bottomPadding),
-                              width: buttonSize, height: buttonSize)
-        
-        // Down button
-        let downButton = createButton(title: "↓", action: #selector(moveDown))
-        downButton.frame = CGRect(x: buttonSize + spacing,
-                                y: view.bounds.height - (buttonSize + bottomPadding),
-                                width: buttonSize, height: buttonSize)
+        upButton.frame = CGRect(
+            x: centerX - buttonSize/2,
+            y: centerY - buttonSize - spacing,
+            width: buttonSize, 
+            height: buttonSize
+        )
         
         // Left button
         let leftButton = createButton(title: "←", action: #selector(moveLeft))
-        leftButton.frame = CGRect(x: spacing,
-                                y: view.bounds.height - (buttonSize + bottomPadding),
-                                width: buttonSize, height: buttonSize)
+        leftButton.frame = CGRect(
+            x: centerX - buttonSize - spacing,
+            y: centerY,
+            width: buttonSize, 
+            height: buttonSize
+        )
         
         // Right button
         let rightButton = createButton(title: "→", action: #selector(moveRight))
-        rightButton.frame = CGRect(x: 2 * buttonSize + spacing,
-                                 y: view.bounds.height - (buttonSize + bottomPadding),
-                                 width: buttonSize, height: buttonSize)
+        rightButton.frame = CGRect(
+            x: centerX + spacing,
+            y: centerY,
+            width: buttonSize, 
+            height: buttonSize
+        )
         
-        // Add jump button
+        // Down button
+        let downButton = createButton(title: "↓", action: #selector(moveDown))
+        downButton.frame = CGRect(
+            x: centerX - buttonSize/2,
+            y: centerY + buttonSize + spacing,
+            width: buttonSize, 
+            height: buttonSize
+        )
+        
+        // Add jump button on the right side
         let jumpButton = createJumpButton()
-        jumpButton.frame = CGRect(x: view.bounds.width - buttonSize - spacing,
-                                y: view.bounds.height - buttonSize - bottomPadding,
-                                width: buttonSize * 1.5,  // Make it wider
-                                height: buttonSize)
+        jumpButton.frame = CGRect(
+            x: view.bounds.width * 0.75 - buttonSize/2,
+            y: view.bounds.height - buttonSize - bottomPadding,
+            width: buttonSize * 1.5,
+            height: buttonSize
+        )
         
         view.addSubview(jumpButton)
-        
-        // Add existing buttons...
         view.addSubview(upButton)
         view.addSubview(downButton)
         view.addSubview(leftButton)
@@ -138,9 +155,20 @@ class GameViewController: UIViewController {
     private func createButton(title: String, action: Selector) -> UIButton {
         let button = UIButton(type: .system)
         button.setTitle(title, for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 24)
-        button.backgroundColor = UIColor.white.withAlphaComponent(0.3)
-        button.layer.cornerRadius = 25
+        button.titleLabel?.font = .systemFont(ofSize: 28, weight: .bold)
+        button.setTitleColor(.white, for: .normal)
+        
+        // Improved styling for buttons
+        button.backgroundColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 0.7)
+        button.layer.cornerRadius = 30
+        button.layer.borderWidth = 2
+        button.layer.borderColor = UIColor.white.withAlphaComponent(0.3).cgColor
+        
+        // Add shadow for depth
+        button.layer.shadowColor = UIColor.black.cgColor
+        button.layer.shadowOffset = CGSize(width: 0, height: 3)
+        button.layer.shadowRadius = 5
+        button.layer.shadowOpacity = 0.5
         
         // Add touch down and touch up handlers
         button.addTarget(self, action: #selector(buttonTouchDown(_:)), for: .touchDown)
@@ -164,6 +192,18 @@ class GameViewController: UIViewController {
     }
     
     @objc private func buttonTouchDown(_ sender: UIButton) {
+        // Visual feedback when button is pressed
+        UIView.animate(withDuration: 0.1) {
+            sender.transform = CGAffineTransform(scaleX: 0.95, y: 0.95)
+            sender.alpha = 1.0
+            
+            if sender.titleLabel?.text == "JUMP" {
+                sender.backgroundColor = UIColor(red: 1.0, green: 0.4, blue: 0.4, alpha: 0.9)
+            } else {
+                sender.backgroundColor = UIColor(red: 0.3, green: 0.3, blue: 0.3, alpha: 0.9)
+            }
+        }
+        
         // Stop any existing movement
         stopMovement()
         
@@ -192,6 +232,18 @@ class GameViewController: UIViewController {
     }
     
     @objc private func buttonTouchUp(_ sender: UIButton) {
+        // Visual feedback when button is released
+        UIView.animate(withDuration: 0.1) {
+            sender.transform = .identity
+            sender.alpha = 1.0
+            
+            if sender.titleLabel?.text == "JUMP" {
+                sender.backgroundColor = UIColor(red: 0.9, green: 0.3, blue: 0.3, alpha: 0.7)
+            } else {
+                sender.backgroundColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 0.7)
+            }
+        }
+        
         stopMovement()
     }
     
@@ -246,10 +298,26 @@ class GameViewController: UIViewController {
     private func createJumpButton() -> UIButton {
         let button = UIButton(type: .system)
         button.setTitle("JUMP", for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 20, weight: .bold)
-        button.backgroundColor = UIColor.white.withAlphaComponent(0.3)
-        button.layer.cornerRadius = 25
+        button.titleLabel?.font = .systemFont(ofSize: 22, weight: .bold)
+        button.setTitleColor(.white, for: .normal)
+        
+        // Distinctive styling for jump button
+        button.backgroundColor = UIColor(red: 0.9, green: 0.3, blue: 0.3, alpha: 0.7)
+        button.layer.cornerRadius = 30
+        button.layer.borderWidth = 2
+        button.layer.borderColor = UIColor.white.withAlphaComponent(0.5).cgColor
+        
+        // Add shadow for depth
+        button.layer.shadowColor = UIColor.black.cgColor
+        button.layer.shadowOffset = CGSize(width: 0, height: 3)
+        button.layer.shadowRadius = 5
+        button.layer.shadowOpacity = 0.5
+        
+        // Add glow effect when pressed
         button.addTarget(self, action: #selector(jumpButtonPressed), for: .touchUpInside)
+        button.addTarget(self, action: #selector(buttonTouchDown(_:)), for: .touchDown)
+        button.addTarget(self, action: #selector(buttonTouchUp(_:)), for: [.touchUpOutside, .touchCancel])
+        
         return button
     }
     
